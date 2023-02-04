@@ -62,6 +62,18 @@
  * movD = Sum(movNd * xDNd, for each N and d)
  * ...
  * 
+ * If the destination cell is occupied by another bacterium,
+ * this bacterium will not move and move history will be recorded 
+ * as a no-move.  If the destination cell is empty or contains  food,
+ * this bacterium will move and consume any available food.
+ * 
+ * * World logic
+ * Matrix world is the world.  A cell with value 0 is empty.  A cell with
+ * value -1 is occupied by a bacterium.  A cell with value greater than
+ * zero contains food with the amount of energy indicated by that number.
+ * 
+ * Food will be randomly created at time intervals - this logic is TBD.
+ * 
  * * Genetics description
  * Bacterium's genetics involves two 
  * 
