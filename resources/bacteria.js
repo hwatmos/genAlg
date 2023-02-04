@@ -74,24 +74,30 @@
  * 
  * Food will be randomly created at time intervals - this logic is TBD.
  * 
- * * Genetics description
- * Bacterium's genetics involves two 
+ * * Directions
+ * Up is smaller values of y.
+ * Down is larger values of y.
  * 
  * ! Code documentation
  * Main functions and variables
  * - Screen canvas:
  *   - maxX, maxY, halfX, halfY
  *   - container (PIXI.Container())
+ * 
  * - Bacteria - general properties:
  *   - eS - energy usage rate per "frame."
  *   - eM - energy amount that is transfered to a child bacterium.
  *   - eR - energy restored per frame while sleeping.
+ * 
  * - Bacterium specific properties (not genetic):
  *   - eCurrent - current level of energy.
+ *   - readyToMultiply 0/1 indicator if ready to multiply
  *   - mov1u, mov1d, mov1l, mov1r - which direction the bacterium moved 
  *     1 frame ago (up, down, left, right) - indicators.
  *   - mov2_, mov3_, mov4_, mov5_ - as above but 2, 3, 4, 5 frames ago,
  *     and "_" can be u, d, l, r.
+ *   - action in {'sleep','move'}
+ * 
  * - Bacterium specific properties (genetics):
  *   - eMultiplyLevel in [0..100] - energy required to multiply.
  *   - x1 in [0,100]
@@ -120,6 +126,24 @@
       p *= Math.random();
   } while (p > L);
   return k - 1;
+}
+
+function indexOfMax(arr) {
+  if (arr.length === 0) {
+      return -1;
+  }
+
+  var max = arr[0];
+  var maxIndex = 0;
+
+  for (var i = 1; i < arr.length; i++) {
+      if (arr[i] > max) {
+          maxIndex = i;
+          max = arr[i];
+      }
+  }
+
+  return maxIndex;
 }
 
 // #endregion
@@ -243,12 +267,7 @@ class Bacterium{
     if (!successfullyCreated) {
         //TODO kill bacterium that is at startY,startX
     }
-    
-    this.eCurrent = startE;
-    this.mov1u = this.mov1d = this.mov1l = this.mov1r = 0;
-    this.mov2u = this.mov2d = this.mov2l = this.mov2r = 0;
-    this.mov3u = this.mov3d = this.mov3l = this.mov3r = 0;
-    this.mov4u = this.mov4d = this.mov4l = this.mov4r = 0;
+
     // Genetics:
     this.genes = startGenes;
     // Decipher genes:
@@ -356,6 +375,186 @@ class Bacterium{
     this.xL5r = this.genes[81];
     this.xL5d = this.genes[82];
     this.xL5l = this.genes[83];
+    // Non-genetic properties
+    this.action = 'sleep';
+    this.eCurrent = startE;
+    this.readyToMultiply = this.eCurrent >= this.eMultiplyLevel;
+    this.mov1u = this.mov1d = this.mov1l = this.mov1r = 0;
+    this.mov2u = this.mov2d = this.mov2l = this.mov2r = 0;
+    this.mov3u = this.mov3d = this.mov3l = this.mov3r = 0;
+    this.mov4u = this.mov4d = this.mov4l = this.mov4r = 0;
+    this.mov5u = this.mov5d = this.mov5l = this.mov5r = 0;
+
+    this.decideAction = function(time, timeDelta) {
+      this.readyToMultiply = this.eCurrent >= this.eMultiplyLevel;
+      let decisionScore = (this.eCurrent * this.x1 + this.eMultiplyLevel * this.x2)
+          decisionScore = decisionScore/(2*this.eCurrent*this.eMultiplyLevel*this.x2)
+          decisionScore = decisionScore*100;
+      if (decisionScore > this.x3) {
+        this.action = 'sleep';
+      } else {
+        this.action = 'move';
+      }
+      this.performAction(time,timeDelta);
+    }
+
+    this.performAction = function(time, timeDelta) {
+      if (this.action == 'sleep') {
+        this.sleep(time,timeDelta) 
+      } else if (this.action == 'move') {
+        this.move(time,timeDelta)
+      }2
+    }
+
+    this.sleep = function(time, timeDelta) {
+      this.eCurrent +=  eR;
+    }
+
+    this.move = function(time,timeDelta) {
+      // Calculate direction scores
+      let scoreU = scoreR = scoreD = scoreL = 0;
+      scoreU = 0 +
+               this.mov1u * this.xU1u +
+               this.mov1r * this.xU1R +
+               this.mov1d * this.xU1D +
+               this.mov1l * this.xU1L +
+
+               this.mov2u * this.xU2u +
+               this.mov2r * this.xU2R +
+               this.mov2d * this.xU2D +
+               this.mov2l * this.xU2L +
+
+               this.mov3u * this.xU3u +
+               this.mov3r * this.xU3R +
+               this.mov3d * this.xU3D +
+               this.mov3l * this.xU3L +
+
+               this.mov4u * this.xU4u +
+               this.mov4r * this.xU4R +
+               this.mov4d * this.xU4D +
+               this.mov4l * this.xU4L +
+
+               this.mov5u * this.xU5u +
+               this.mov5r * this.xU5R +
+               this.mov5d * this.xU5D +
+               this.mov5l * this.xU5L;
+      scoreR = 0 +
+               this.mov1u * this.xR1u +
+               this.mov1r * this.xR1R +
+               this.mov1d * this.xR1D +
+               this.mov1l * this.xR1L +
+
+               this.mov2u * this.xR2u +
+               this.mov2r * this.xR2R +
+               this.mov2d * this.xR2D +
+               this.mov2l * this.xR2L +
+
+               this.mov3u * this.xR3u +
+               this.mov3r * this.xR3R +
+               this.mov3d * this.xR3D +
+               this.mov3l * this.xR3L +
+
+               this.mov4u * this.xR4u +
+               this.mov4r * this.xR4R +
+               this.mov4d * this.xR4D +
+               this.mov4l * this.xR4L +
+
+               this.mov5u * this.xR5u +
+               this.mov5r * this.xR5R +
+               this.mov5d * this.xR5D +
+               this.mov5l * this.xR5L;
+      scoreD = 0 +
+               this.mov1u * this.xD1u +
+               this.mov1r * this.xD1R +
+               this.mov1d * this.xD1D +
+               this.mov1l * this.xD1L +
+
+               this.mov2u * this.xD2u +
+               this.mov2r * this.xD2R +
+               this.mov2d * this.xD2D +
+               this.mov2l * this.xD2L +
+
+               this.mov3u * this.xD3u +
+               this.mov3r * this.xD3R +
+               this.mov3d * this.xD3D +
+               this.mov3l * this.xD3L +
+
+               this.mov4u * this.xD4u +
+               this.mov4r * this.xD4R +
+               this.mov4d * this.xD4D +
+               this.mov4l * this.xD4L +
+
+               this.mov5u * this.xD5u +
+               this.mov5r * this.xD5R +
+               this.mov5d * this.xD5D +
+               this.mov5l * this.xD5L;
+      scoreL = 0 +
+               this.mov1u * this.xL1u +
+               this.mov1r * this.xL1R +
+               this.mov1d * this.xL1D +
+               this.mov1l * this.xL1L +
+
+               this.mov2u * this.xL2u +
+               this.mov2r * this.xL2R +
+               this.mov2d * this.xL2D +
+               this.mov2l * this.xL2L +
+
+               this.mov3u * this.xL3u +
+               this.mov3r * this.xL3R +
+               this.mov3d * this.xL3D +
+               this.mov3l * this.xL3L +
+
+               this.mov4u * this.xL4u +
+               this.mov4r * this.xL4R +
+               this.mov4d * this.xL4D +
+               this.mov4l * this.xL4L +
+
+               this.mov5u * this.xL5u +
+               this.mov5r * this.xL5R +
+               this.mov5d * this.xL5D +
+               this.mov5l * this.xL5L;
+      maxScore = Math.max(scoreU,scoreR,scoreD,scoreL);
+      // Select direction
+      nextIsU=nextIsR=nextIsD=nextIsL=0;
+      switch (maxScore) {
+        case scoreU: nextIsU = 1;
+        case scoreR: nextIsR = 1;
+        case scoreD: nextIsD = 1;
+        case scoreL: nextIsL = 1;
+      }
+      xDelta = nextIsR - nextIsL;
+      yDelta = nextIsD - nextIsU;
+      // Check if movement is possible
+      //nextX =...
+    }
+
+    this.updateMoveHistory = function(u,r,d,l,time,timeDelta) {
+      this.mov5u = this.mov4u;
+      this.mov5r = this.mov4r;
+      this.mov5d = this.mov4d;
+      this.mov5l = this.mov4l;
+
+      this.mov4u = this.mov3u;
+      this.mov4r = this.mov3r;
+      this.mov4d = this.mov3d;
+      this.mov4l = this.mov3l;
+
+      this.mov3u = this.mov2u;
+      this.mov3r = this.mov2r;
+      this.mov3d = this.mov2d;
+      this.mov3l = this.mov2l;
+
+      this.mov2u = this.mov1u;
+      this.mov2r = this.mov1r;
+      this.mov2d = this.mov1d;
+      this.mov2l = this.mov1l;
+
+      this.mov1u = u;
+      this.mov1r = r;
+      this.mov1d = d;
+      this.mov1l = l;
+    }
+
   }
 
 }
