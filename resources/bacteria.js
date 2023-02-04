@@ -48,6 +48,20 @@
  * 
  * Otherwise, scavenge.
  * 
+ * * Scavenging rules (motion rules)
+ * Movement is encoded using variables movND where N is a number indicating
+ * how many frames ago and D is a character indicating direction.  For ex-
+ * ample, mov1u==1 means that 1 frame ago, the bacterium moved up
+ * (and in this example, mov1d, mov1l, mov1r all must be 0).
+ * 
+ * Next move formula:
+ * Calculate movU, movD, movL, movR and select the direction
+ * that has the highest score.
+ * 
+ * movU = Sum(movNd * xUNd, for each N and d)
+ * movD = Sum(movNd * xDNd, for each N and d)
+ * ...
+ * 
  * * Genetics description
  * Bacterium's genetics involves two 
  * 
@@ -59,6 +73,11 @@
  * - Bacteria - general properties:
  *   - eS - energy usage rate per "frame."
  *   - eM - energy amount that is transfered to a child bacterium.
+ *   - eR - energy restored per frame while sleeping.
+ *   - mov1u, mov1d, mov1l, mov1r - which direction the bacterium moved 
+ *     1 frame ago (up, down, left, right) - indicators.
+ *   - mov2_, mov3_, mov4_, mov5_ - as above but 2, 3, 4, 5 frames ago,
+ *     and "_" can be u, d, l, r.
  * - Bacterium specific properties (not genetic):
  *   - eCurrent - current level of energy.
  * - Bacterium specific properties (genetics):
@@ -66,6 +85,7 @@
  *   - x1 in [0,1]
  *   - x2 in [0,1]
  *   - x3 in [0,1]
+ *   - xDNd in [0,1]; D in {U,D,L,R}, N in [1..5], d in {U,D,L,R}
  */
 
 //#endregion
@@ -175,6 +195,8 @@ app.stage.addChild(logo);
 /**
  * *Setup
  */
+
+let world = new Array(100).fill(Array(100).fill(0));
 
 // #endregion
 /////////////////////////////////////////////////////////////////////////////////
