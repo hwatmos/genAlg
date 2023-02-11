@@ -74,6 +74,19 @@
  * 
  * Food will be randomly created at time intervals - this logic is TBD.
  * 
+ * * Turn description
+ * Every main loop iteration is a turn in the game.  Actions are executed
+ * in the following order:
+ * 1. For each bacterium:
+ *   1.1. If readyToMultiply, check if there are neighbors who are also
+ *        ready.  If so, multiply and update both bacteria's energies.
+ * 2. Scan the map and up all food sources by a point.
+ * 3. Generate new food sources.
+ * 4. For each bacterium:
+ *   4.1. Perform movement and eat. Together to simplify management
+ *        of the world matrix - otherwise would need to have separate
+ *        matrices or dimension for energy and for bacteria.
+ * 
  * * Directions
  * Up is smaller values of y.
  * Down is larger values of y.
@@ -97,6 +110,7 @@
  *   - mov2_, mov3_, mov4_, mov5_ - as above but 2, 3, 4, 5 frames ago,
  *     and "_" can be u, d, l, r.
  *   - action in {'sleep','move'}
+ *   - X, Y - current position.
  * 
  * - Bacterium specific properties (genetics):
  *   - eMultiplyLevel in [0..100] - energy required to multiply.
@@ -233,7 +247,9 @@ app.stage.addChild(logo);
  * *Setup
  */
 
-let world = new Array(100).fill(Array(100).fill(0));
+let maxWorldX = 100;
+let maxWorldY = 100;
+let world = new Array(maxWorldY).fill(Array(maxWorldX).fill(0));
 let eM = 50;
 let eS = 1;
 let eR = 2;
@@ -403,7 +419,7 @@ class Bacterium{
         this.sleep(time,timeDelta) 
       } else if (this.action == 'move') {
         this.move(time,timeDelta)
-      }2
+      }
     }
 
     this.sleep = function(time, timeDelta) {
@@ -522,10 +538,37 @@ class Bacterium{
         case scoreD: nextIsD = 1;
         case scoreL: nextIsL = 1;
       }
+      // This will eliminate movement if opposing directions' scores are the same
+      // (They cancel out)
       xDelta = nextIsR - nextIsL;
       yDelta = nextIsD - nextIsU;
+      // Destination cells:
+      xDestination = this.X;
+      yDestination = this.Y;
+      if (this.X + xDelta >= 100) {
+        xDestination = this.X + xDelta - 100;
+      } else if (this.X + xDelta < 0 ) {
+        xDestination = this.X + xDelta + 100;
+      }
+      if (this.Y + yDelta >= 100) {
+        yDestination = this.Y + yDelta - 100;
+      } else if (this.Y + yDelta < 0 ) {
+        yDestination = this.Y + yDelta + 100;
+      }
       // Check if movement is possible
-      //nextX =...
+      prevX = this.X;
+      prevY = this.Y;
+      if (world[yDestination][xDestination] >= 0) {
+        this.X = xDestination;
+        this.Y = yDestination;
+      }
+      // Update move history - will update even if the move was blocked
+      this.updateMoveHistory(nextIsU,nextIsR,nextIsD,nextIsL,time,timeDelta);
+      // Eat if possible
+      this.eat(time,timeDelta);
+      // Update my location on the map:
+      world[prevY][trevX] = 0;
+      world[this.X][this.Y] = -1;
     }
 
     this.updateMoveHistory = function(u,r,d,l,time,timeDelta) {
@@ -553,6 +596,11 @@ class Bacterium{
       this.mov1r = r;
       this.mov1d = d;
       this.mov1l = l;
+    }
+
+    this.eat = function(time,timeDelta) {
+      this.eCurrent += world[this.Y][this.X]
+      world[this.Y][this.X] = 0
     }
 
   }
