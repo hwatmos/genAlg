@@ -285,9 +285,16 @@ class Bacterium{
     else {
       for (let i = -1; i <= 1; i++) {
         for (let j = -1; j <= 1; j++) {
-          if (world[j][i] > -1) {
-            this.X = i;
-            this.Y = j;
+          newY = startY + i;
+          newY = (newY>=100) ? newY-100 : newY;
+          newY = (newY<0) ? newY+100 : newY;
+          newX = startX + j;
+          newX = (newX>=100) ? newX-100 : newX;
+          newX = (newX<0) ? newX+100 : newX;
+          if (world[newY][newX] > -1) {
+            this.Y = newY;
+            this.X = newX;
+            world[this.Y][this.X] = -1;
             successfullyCreated = true;
           }
         }
@@ -295,7 +302,11 @@ class Bacterium{
     }
     // Check whether location was found
     if (!successfullyCreated) {
-        bacteria[startY][startX].kill(time,timeDelta);
+      // Kill this bacteria and the one that already exists at the calculated
+      // start location.  However, need to start with the other bacteria
+      // to avoid destroying reference to it if this is killed first
+      bacteria[startY][startX].kill(time,timeDelta);
+      this.kill(time,timeDelta);
     }
 
     // Genetics:
@@ -620,7 +631,9 @@ class Bacterium{
 
     this.kill = function(time,timeDelta) {
       world[this.Y][this.X] = 0; // update the world
-      bacteria[this.Y][this.X].splice(0); // kill reference to this bacterium
+      bacteria[this.Y][this.X].splice(0); // kill reference to this bacterium and
+      // other bacteria here (may happen when this bacterium was just born from
+      // a multiplication process.)
       this.destroy(); // distroy this object
     }
 
