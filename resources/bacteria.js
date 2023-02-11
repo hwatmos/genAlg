@@ -580,7 +580,7 @@ class Bacterium{
       } else if (this.Y + yDelta < 0 ) {
         yDestination = this.Y + yDelta + 100;
       }
-      // Check if movement is possible
+      // Move if possible
       prevX = this.X;
       prevY = this.Y;
       if (world[yDestination][xDestination] >= 0) {
@@ -590,6 +590,11 @@ class Bacterium{
       }
       // Update move history - will update even if the move was blocked
       this.updateMoveHistory(nextIsU,nextIsR,nextIsD,nextIsL,time,timeDelta);
+      // Reduce energy due to movement
+      this.eCurrent -= eS;
+      if (this.eCurrent<=0) {
+        this.kill();
+      }
       // Eat if possible
       this.eat(time,timeDelta);
       // Update my location on the map:
