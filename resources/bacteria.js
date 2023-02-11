@@ -305,7 +305,7 @@ class Bacterium{
       // Kill this bacteria and the one that already exists at the calculated
       // start location.  However, need to start with the other bacteria
       // to avoid destroying reference to it if this is killed first
-      bacteria[startY][startX].kill(time,timeDelta);
+      bacteria[startY][startX][0].kill(time,timeDelta);
       this.kill(time,timeDelta);
     }
 
@@ -631,7 +631,7 @@ class Bacterium{
 
     this.kill = function(time,timeDelta) {
       world[this.Y][this.X] = 0; // update the world
-      bacteria[this.Y][this.X].splice(0); // kill reference to this bacterium and
+      bacteria[this.Y][this.X].splice(0,1); // kill reference to this bacterium and
       // other bacteria here (may happen when this bacterium was just born from
       // a multiplication process.)
       this.destroy(); // distroy this object
