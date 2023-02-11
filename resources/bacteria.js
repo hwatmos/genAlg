@@ -644,6 +644,16 @@ class Bacterium{
 // #endregion
 /////////////////////////////////////////////////////////////////////////////////
 
+//#region Other Logic
+
+function geneticAlgorithm(genes1,genes2) {
+  // For now, just return first parent's genes
+  return genes1;
+}
+
+// #endregion
+/////////////////////////////////////////////////////////////////////////////////
+
 //#region Game loop
 
 app.stage.addChild(container);
