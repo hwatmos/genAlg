@@ -687,7 +687,15 @@ app.ticker.add((delta) => {
                 // Check for a neighbor and multiply
                 if (world[neighborY][neighborX] == -1){
                   if (bacteria[neighborY][neighborX].readyToMultiply && bacteria[neighborY][neighborX].action=='move') {
+                    // Reduce energies of the parents
+                    bacteria[i][j].eCurrent -= eM;
+                    bacteria[neighborY][neighborX].eCurrent -= eM;
+                    // Combine genes
+                    genes1 = bacteria[i][j].genes;
+                    genes2 = bacteria[neighborY][neighborX].genes;
+                    newGenes = geneticAlgorithm(genes1,genes2)
                     // Create new bacterium
+                    bacteria[i][j].push(new Bacterium(j,i,eM,newGenes))
                   }
                 }
               }
