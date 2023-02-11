@@ -83,8 +83,8 @@
  * * Turn description
  * Every main loop iteration is a turn in the game.  Actions are executed
  * in the following order:
- * *1. For each bacterium:
- *   *1.1. If readyToMultiply, check if there are neighbors who are also
+ * 1. For each bacterium:
+ *   1.1. If readyToMultiply, check if there are neighbors who are also
  *        ready.  If so, multiply and update both bacteria's energies.
  * *2. Scan the map and up all food sources by a point.
  * *3. Generate new food sources.
