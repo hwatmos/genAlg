@@ -295,7 +295,6 @@ class Bacterium{
     }
     // Check whether location was found
     if (!successfullyCreated) {
-        //TODO kill bacterium that is at startY,startX
         bacteria[startY][startX].kill(time,timeDelta);
     }
 
@@ -576,6 +575,7 @@ class Bacterium{
       if (world[yDestination][xDestination] >= 0) {
         this.X = xDestination;
         this.Y = yDestination;
+        bacteria[this.X][this.Y].push(bacteria[prevY][prevX].splice(0,1)[0]);
       }
       // Update move history - will update even if the move was blocked
       this.updateMoveHistory(nextIsU,nextIsR,nextIsD,nextIsL,time,timeDelta);
