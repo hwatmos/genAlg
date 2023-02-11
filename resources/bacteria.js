@@ -87,7 +87,7 @@
  *   1.1. If readyToMultiply, check if there are neighbors who are also
  *        ready.  If so, multiply and update both bacteria's energies.
  * 2. Scan the map and up all food sources by a point.
- * *3. Generate new food sources.
+ * 3. Generate new food sources.
  * 4. For each bacterium:
  *   4.1. Perform movement and eat. Together to simplify management
  *        of the world matrix - otherwise would need to have separate
@@ -102,6 +102,7 @@
  * - Screen canvas:
  *   - maxX, maxY, halfX, halfY
  *   - container (PIXI.Container())
+ *   - foodProb
  * 
  * - Bacteria - general properties:
  *   - eS - energy usage rate per "frame."
@@ -265,6 +266,7 @@ for (let i=0; i<maxWorldY; i++) {
 let eM = 50;
 let eS = 1;
 let eR = 2;
+let foodProb = 0.8;
 
 // #endregion
 /////////////////////////////////////////////////////////////////////////////////
@@ -715,6 +717,31 @@ app.ticker.add((delta) => {
       for (let j = 0; j < maxWorldX; j++) { // map x
         if (world[i][j]>0) {
           world[i][j] += 1;
+        }
+      }
+    }
+
+    // New bacteria loop
+    for (let i=0; i < maxWorldY; i++) { // map y
+      for (let j = 0; j < maxWorldX; j++) { // map x
+        if (world[i][j]>0) {
+          for (let ii=-1;ii<=1;ii++) {
+            for (let jj=-1;jj<=1;jj++) {
+              if (Math.random()>foodProb) {
+                // Calculate neighbor Y by considering edges of the map
+                foodY = i + ii;
+                foodY = (foodY >= maxWorldY) ? foodY - 100 : foodY;
+                foodY = (foodY < 0) ? foodY + 100 : foodY;
+                // Calculate neighbor X by considering edges of the map
+                foodX = j + jj;
+                foodX = (foodX >= maxWorldX) ? foodX - 100 : foodX;
+                foodX = (foodX < 0) ? foodX + 100 : foodX;
+                if (world[foodY][foodX] == 0) {
+                  world[foodY][foodX] = 1;
+                }
+              }
+            }
+          }
         }
       }
     }
