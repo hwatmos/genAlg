@@ -34,7 +34,7 @@
  * another (neighboring cells;  each cell has eight neighbors).  
  * When two bacteria multiply, another bacterium is immediately created 
  * using genetic algorithm.  The new bacterium received eM energy from 
- * each of the parent bacteria and but its own starting energy also becomes
+ * each of the parent bacteria but its own starting energy also becomes
  * eM.
  * 
  * * Bacterium's life algorithm
@@ -278,7 +278,7 @@ class Bacterium{
     // already exists at the start location.
     let successfullyCreated = false;
     if (world[startY][startX] > -1) {
-      this.X = startX;1
+      this.X = startX;
       this.Y = startY;
       successfullyCreated = true;
     }
@@ -642,6 +642,37 @@ app.stage.addChild(container);
 let elapsed = 0.0;
 app.ticker.add((delta) => {
     elapsed += delta;
+
+    // Multiply bacteria
+    for (let i=0; i < maxWorldY; i++) { // map y
+      for (let j = 0; j < maxWorldX; j++) { // map x
+        // Scan surroundings to see if there are neighbors
+        // but only if there is a bacterium HERE and if it is ready to multiply
+        if (world[i][j]==-1) {
+          if (bacteria[i][j].readyToMultiply && bacteria[i][j].action=='move') {
+            for (let ii=-1;ii<=1;ii++) {
+              // Calculate neighbor Y by considering edges of the map
+              tempNeighborY = i + ii;
+              neighborY = (tempNeighborY >= maxWorldY) ? tempNeighborY - 100 : tempNeighborY;
+              neighborY = (neighborY < 0) ? neighborY + 100 : neighborY;
+              for (let jj=-1;jj<=1;jj++) {
+                // Calculate neighbor X by considering edges of the map
+                tempNeighborX = j + jj;
+                neighborX = (tempNeighborX >= maxWorldX) ? tempNeighborX - 100 : tempNeighborX;
+                neighborX = (neighborX < 0) ? neighborX + 100 : neighborX;
+                
+                // Check for a neighbor and multiply
+                if (world[neighborY][neighborX] == -1){
+                  if (bacteria[neighborY][neighborX].readyToMultiply && bacteria[neighborY][neighborX].action=='move') {
+                    // Create new bacterium
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
 
     // Perform bacteria movement
     for (let i=0; i < maxWorldY; i++) {
