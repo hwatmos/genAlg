@@ -88,7 +88,7 @@
  *        ready.  If so, multiply and update both bacteria's energies.
  * *2. Scan the map and up all food sources by a point.
  * *3. Generate new food sources.
- * *4. For each bacterium:
+ * 4. For each bacterium:
  *   4.1. Perform movement and eat. Together to simplify management
  *        of the world matrix - otherwise would need to have separate
  *        matrices or dimension for energy and for bacteria.
@@ -643,6 +643,14 @@ let elapsed = 0.0;
 app.ticker.add((delta) => {
     elapsed += delta;
 
+    // Perform bacteria movement
+    for (let i=0; i < maxWorldY; i++) {
+      for (let j = 0; j < maxWorldX; j++) {
+        if (world[i][j] == -1) {
+          bacteria[i][j].move(elapsed,delta);
+        }
+      }
+    }
 
 });
 //#endregion
