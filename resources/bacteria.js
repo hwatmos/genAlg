@@ -274,6 +274,8 @@ let eR = 2;
 class Bacterium{
   constructor(startX, startY, startE, startGenes) {
     // Find suitable location for the bacterium
+    // If no suitable location is found, kill the bacterium that
+    // already exists at the start location.
     let successfullyCreated = false;
     if (world[startY][startX] > -1) {
       this.X = startX;1
@@ -294,6 +296,7 @@ class Bacterium{
     // Check whether location was found
     if (!successfullyCreated) {
         //TODO kill bacterium that is at startY,startX
+        bacteria[startY][startX].kill(time,timeDelta);
     }
 
     // Genetics:
@@ -613,6 +616,12 @@ class Bacterium{
     this.eat = function(time,timeDelta) {
       this.eCurrent += world[this.Y][this.X]
       world[this.Y][this.X] = 0
+    }
+
+    this.kill = function(time,timeDelta) {
+      world[this.Y][this.X] = 0; // update the world
+      bacteria[this.Y][this.X].splice(0); // kill reference to this bacterium
+      this.destroy(); // distroy this object
     }
 
   }
