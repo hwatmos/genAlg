@@ -86,7 +86,7 @@
  * 1. For each bacterium:
  *   1.1. If readyToMultiply, check if there are neighbors who are also
  *        ready.  If so, multiply and update both bacteria's energies.
- * *2. Scan the map and up all food sources by a point.
+ * 2. Scan the map and up all food sources by a point.
  * *3. Generate new food sources.
  * 4. For each bacterium:
  *   4.1. Perform movement and eat. Together to simplify management
@@ -706,6 +706,15 @@ app.ticker.add((delta) => {
               }
             }
           }
+        }
+      }
+    }
+
+    // Fruit Loops :)
+    for (let i=0; i < maxWorldY; i++) { // map y
+      for (let j = 0; j < maxWorldX; j++) { // map x
+        if (world[i][j]>0) {
+          world[i][j] += 1;
         }
       }
     }
