@@ -68,6 +68,12 @@
  * this bacterium will move and consume any available food.
  * 
  * * World logic
+ * Two world matrices are used:
+ * - world - general map of what is where.
+ * - bacteria - map of bacteria locations.  Each cell stores a bacteria
+ *   object (or is empty).
+ * 
+ * More about the world matrix:
  * Matrix world is the world.  A cell with value 0 is empty.  A cell with
  * value -1 is occupied by a bacterium.  A cell with value greater than
  * zero contains food with the amount of energy indicated by that number.
@@ -77,12 +83,12 @@
  * * Turn description
  * Every main loop iteration is a turn in the game.  Actions are executed
  * in the following order:
- * 1. For each bacterium:
- *   1.1. If readyToMultiply, check if there are neighbors who are also
+ * *1. For each bacterium:
+ *   *1.1. If readyToMultiply, check if there are neighbors who are also
  *        ready.  If so, multiply and update both bacteria's energies.
- * 2. Scan the map and up all food sources by a point.
- * 3. Generate new food sources.
- * 4. For each bacterium:
+ * *2. Scan the map and up all food sources by a point.
+ * *3. Generate new food sources.
+ * *4. For each bacterium:
  *   4.1. Perform movement and eat. Together to simplify management
  *        of the world matrix - otherwise would need to have separate
  *        matrices or dimension for energy and for bacteria.
@@ -250,6 +256,12 @@ app.stage.addChild(logo);
 let maxWorldX = 100;
 let maxWorldY = 100;
 let world = new Array(maxWorldY).fill(Array(maxWorldX).fill(0));
+let bacteria = new Array(maxWorldY).fill(Array(maxWorldX));
+for (let i=0; i<maxWorldY; i++) {
+  for (let j=0; j<maxWorldX; j++) {
+    bacteria[i][j] = [];
+  }
+}
 let eM = 50;
 let eS = 1;
 let eR = 2;
