@@ -19,8 +19,8 @@
  * They need to eat and rest.  We will code our bacteria with a simple naive
  * logic that dictates what a bacterium is supposed to do next based on its 
  * current status.  Current status includes the following properties:
- * - Energy level (0-100).
- * - Matter level (0-100).
+ * - Energy level (0-100), eCurrent.
+ * - Matter/food level (0-100).
  * Bacteria can do one of three actions at any given time:
  * - Scavenge action.
  * - Sleep action.
@@ -64,14 +64,11 @@
  * 
  * If the destination cell is occupied by another bacterium,
  * this bacterium will not move and move history will be recorded 
- * as a no-move.  If the destination cell is empty or contains  food,
+ * as a no-move.  If the destination cell is empty or contains food,
  * this bacterium will move and consume any available food.
  * 
  * * World logic
- * Two world matrices are used:
- * - world - general map of what is where.
- * - bacteria - map of bacteria locations.  Each cell stores a bacteria
- *   object (or is empty).
+ * Two world is represented using a matrix which acts as a map of what is where.
  * 
  * More about the world matrix:
  * Matrix world is the world.  A cell with value 0 is empty.  A cell with
@@ -111,6 +108,7 @@
  * 
  * - Bacterium specific properties (not genetic):
  *   - eCurrent - current level of energy.
+ *   - foodCurrent - current level of food that can be transformed into energy.
  *   - readyToMultiply 0/1 indicator if ready to multiply
  *   - mov1u, mov1d, mov1l, mov1r - which direction the bacterium moved 
  *     1 frame ago (up, down, left, right) - indicators.
@@ -287,17 +285,19 @@ class Bacterium{
     else {
       for (let i = -1; i <= 1; i++) {
         for (let j = -1; j <= 1; j++) {
-          newY = startY + i;
-          newY = (newY>=100) ? newY-100 : newY;
-          newY = (newY<0) ? newY+100 : newY;
-          newX = startX + j;
-          newX = (newX>=100) ? newX-100 : newX;
-          newX = (newX<0) ? newX+100 : newX;
-          if (world[newY][newX] > -1) {
-            this.Y = newY;
-            this.X = newX;
-            world[this.Y][this.X] = -1;
-            successfullyCreated = true;
+          if (!successfullyCreated) {
+            newY = startY + i;
+            newY = (newY>=100) ? newY-100 : newY;
+            newY = (newY<0) ? newY+100 : newY;
+            newX = startX + j;
+            newX = (newX>=100) ? newX-100 : newX;
+            newX = (newX<0) ? newX+100 : newX;
+            if (world[newY][newX] > -1) {
+              this.Y = newY;
+              this.X = newX;
+              world[this.Y][this.X] = -1;
+              successfullyCreated = true;
+            }
           }
         }
       }
@@ -421,6 +421,7 @@ class Bacterium{
     // Non-genetic properties
     this.action = 'sleep';
     this.eCurrent = startE;
+    this.foodCurrent = 0;
     this.readyToMultiply = this.eCurrent >= this.eMultiplyLevel;
     this.mov1u = this.mov1d = this.mov1l = this.mov1r = 0;
     this.mov2u = this.mov2d = this.mov2l = this.mov2r = 0;
@@ -664,9 +665,11 @@ function geneticAlgorithm(genes1,genes2) {
 //#region Game loop
 
 app.stage.addChild(container);
-/**
- * *Game Loop
- */
+// Generate some food and some bacteria
+// Food:
+for (let i=0;i<20;i++) {
+  world[Math.round(Math.random()*100)][Math.round(Math.random()*100)] = 1;
+}
 
 // Add a ticker callback to move the sprites
 let elapsed = 0.0;
